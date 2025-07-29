@@ -131,3 +131,82 @@ Siga as diretrizes de contribuição do projeto para garantir que sua contribui�
 ## Licença
 
 Este projeto está licenciado sob a MIT License - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+## Arquitetura do Sistema
+
+### Visão Geral de Alto Nível
+
+O sistema é composto por três camadas principais:
+
+1. **Interface CLI** - Camada de apresentação que processa comandos e exibe resultados
+2. **Camada de Serviço** - Lógica de negócios e integração com Telegram
+3. **Camada de Dados** - Manipulação de dados e formatos de exportação
+
+```mermaid
+graph TD
+    A[CLI Interface] -->|Comandos| B[Service Layer]
+    B -->|API Calls| C[Telegram API]
+    A -->|Exportação| D[Formatos: JSON/YAML/CSV]
+    B -->|Dados| D
+```
+
+### Interações de Componentes
+
+1. **CLI Interface**:
+   - `main.py` - Ponto de entrada e processamento de argumentos
+   - `rich` - Formatação de tabelas e mensagens coloridas
+   - `prompt_toolkit` - Input interativo com confirmações
+
+2. **Camada de Serviço**:
+   - `TelegramService` - Implementa operações principais
+   - `connect/disconnect` - Gerenciamento de sessão
+   - `get_dialogs` - Listagem de grupos
+   - `leave_group` - Saída de grupos
+   - `export_media` - Download de mídias
+
+3. **Camada de Dados**:
+   - `export_data` - Função de exportação multi-formato
+   - `config.py` - Configurações e credenciais
+   - `exceptions.py` - Hierarquia de exceções
+
+### Diagramas de Fluxo de Dados
+
+```mermaid
+sequenceDiagram
+    participant CLI
+    participant Service
+    participant Telegram
+    participant Storage
+
+    CLI->>Service: Comando (ex: list)
+    Service->>Telegram: API Call
+    Telegram-->>Service: Dados brutos
+    Service->>CLI: Dados formatados
+    CLI->>Storage: Exportação (se solicitado)
+```
+
+### Decisões de Design e Justificativa
+
+1. **Assincronicidade**:
+   - Uso de `async/await` para operações I/O
+   - Justificativa: Melhor desempenho em operações de rede
+
+2. **Tratamento de Erros**:
+   - Hierarquia de exceções específica
+   - Justificativa: Melhor diagnóstico de problemas
+
+3. **Interface de Usuário**:
+   - `rich` para saída formatada
+   - `prompt_toolkit` para confirmações interativas
+   - Justificativa: Melhor experiência do usuário
+
+### Restrições e Limitações
+
+1. **Dependências Externas**:
+   - Telegram API (requer credenciais válidas)
+   - Limites de rate-limiting da API
+
+2. **Limitações Atuais**:
+   - Falta de implementação de alguns comandos (ex: spam detection)
+   - Não suporta autenticação 2FA
+   - Limitado a contas pessoais (não suporta contas de negócios)
